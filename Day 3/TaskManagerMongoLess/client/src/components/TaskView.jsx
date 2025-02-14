@@ -1,27 +1,42 @@
-import PageHeader from "./PageHeader";
-import { useParams } from "react-router-dom";
-
-const tasks = [
-  { id: 1, name: "Complete Bootstrap", status: "Pending" },
-  { id: 2, name: "Sleeping", status: "Completed" },
-];
+import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const TaskView = () => {
   const { id } = useParams();
-  const task = tasks.find((task) => task.id === parseInt(id));
+  const [task, setTask] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    axios
+      .get(`http://localhost:8080/tasks/${id}`)
+      .then((response) => {
+        console.log("API Response: ", response.data);
+        setTask(response.data);
+      })
+      .catch(() => setError("Task not found"));
+  }, [id]);
+
+  if (error) return <p className="text-danger">{error} </p>;
+  if (!task) return <p> Loading task.... </p>;
 
   return (
-    <div>
-      <PageHeader />
+    <div className="container mt-4">
       <h3> View Task </h3>
-      <div className="form-group  mb-3">
-        <label className="form-label">Task Name: </label>
-        <div className="form-control"> {task.name || "Not Found"}</div>
+      <div className="card p-3">
+        <p>
+          <strong>Task ID: </strong> {task.id}
+        </p>
+        <p>
+          <strong>Task Title: </strong> {task.title}
+        </p>
+        <p>
+          <strong>Task Status: </strong> {task.status}
+        </p>
       </div>
-      <div className="form-group  mb-3">
-        <label className="form-label">Task Status: </label>
-        <div className="form-control"> {task.status || "Not Found"}</div>
-      </div>
+      <Link to="/tasks/list" className="btn btn-light mt-3">
+        Go Back{" "}
+      </Link>
     </div>
   );
 };
